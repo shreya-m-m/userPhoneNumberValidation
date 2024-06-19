@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import entities.MyAdmin;
 import entities.MyUser;
@@ -54,6 +56,9 @@ public class WebPageControllerTest {
     
     @Mock
     private Model model;
+    
+    @Mock
+    private RedirectAttributes redirectAttributes;
 
     // Setup method to initialize mocks and mockMvc before each test
     @Before
@@ -190,19 +195,27 @@ public class WebPageControllerTest {
     }
     
     // Test for updating user number
-//    @Test
-//    public void testUpdateUserNumber() {
-//        long userId = 123L;
-//        long newNumber = 9876543210L;
-//        MyUser updatedUser = new MyUser();
-//        updatedUser.setUser_id(userId);
-//        updatedUser.setNumber(newNumber);
-//        when(session.getAttribute("validuser")).thenReturn(updatedUser);
-//        String viewName = controller.updateUserNumber(userId, newNumber, session);
-//        assertEquals("redirect:/update", viewName);
-//        verify(service).updateNumber(userId, newNumber);
-//        verify(session).setAttribute("validuser", updatedUser);
-//    }
+    @Test
+    public void testUpdateUserNumber() {
+        long userId = 123L;
+        long newNumber = 9876543210L;
+        MyUser updatedUser = new MyUser();
+        updatedUser.setUser_id(userId);
+        updatedUser.setNumber(newNumber);
+        when(session.getAttribute("validuser")).thenReturn(updatedUser);
+        doNothing().when(service).updateNumber(userId, newNumber);
+        // Mock the behavior of addFlashAttribute to return the RedirectAttributes itself (chaining support)
+        when(redirectAttributes.addFlashAttribute(anyString(), anyString())).thenReturn(redirectAttributes);
+
+
+        String viewName = controller.updateUserNumber(userId, newNumber, session, redirectAttributes);
+
+        assertEquals("redirect:/update", viewName);
+        verify(service).updateNumber(userId, newNumber);
+        verify(session).setAttribute("validuser", updatedUser);
+        verify(redirectAttributes, times(1)).addFlashAttribute("successMessage", "Number updated successfully!");
+        assertEquals(newNumber, updatedUser.getNumber());
+    }
     
     // Test for deleting a user
     @Test
