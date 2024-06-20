@@ -106,14 +106,22 @@ public class WebPageControllerTest {
     // Test for User Login PostMapping with valid credentials
     @Test
     public void testUserLogin_ValidCredentials() {
+    	//Arrange
         String username = "valid_username";
         String password = "valid_password";
         MyUser localUser = new MyUser();
         localUser.setUsername(username);
         localUser.setPassword(password);
+        
         when(service.validateUser(username, password)).thenReturn(localUser);
+        
+        //Act
         String viewName = controller.userLogin(model, session, username, password);
+        
+        //Assert
         assertEquals("redirect:/update", viewName);
+        
+        //Verify behaviors
         verify(session).setAttribute("validuser", localUser);
         verify(model, never()).addAttribute(eq("error"), anyString());
     }
@@ -121,11 +129,18 @@ public class WebPageControllerTest {
     // Test for User Login PostMapping with invalid credentials
     @Test
     public void testUserLogin_InvalidCredentials() {
+    	//Arrange 
         String username = "invalid_username";
         String password = "invalid_password";
         when(service.validateUser(username, password)).thenReturn(null);
+        
+        //Act
         String viewName = controller.userLogin(model, session, username, password);
+        
+        //Assert
         assertEquals("userLogin", viewName);
+        
+        //Verify behaviors
         verify(model).addAttribute("error", "Invalid username or password");
         verify(session, never()).setAttribute(eq("validuser"), any(MyUser.class));
     }
@@ -141,14 +156,22 @@ public class WebPageControllerTest {
     // Test for Admin Login PostMapping with valid credentials
     @Test
     public void testAdminLogin_ValidCredentials() {
+    	//Arrange
         String adminname = "valid_adminname";
         String password = "valid_password";
         MyAdmin localAdmin = new MyAdmin();
         localAdmin.setAdminname(adminname);
         localAdmin.setPassword(password);
+        
         when(service.validateAdmin(adminname, password)).thenReturn(localAdmin);
+        
+        //Act
         String viewName = controller.adminLogin(model, session, adminname, password);
+        
+        //Assert
         assertEquals("redirect:/display1", viewName);
+        
+        //Verify behaviors
         verify(model).addAttribute("validAdmin", localAdmin);
         verify(model, never()).addAttribute(eq("error"), anyString());
     }
@@ -156,11 +179,18 @@ public class WebPageControllerTest {
     // Test for Admin Login PostMapping with invalid credentials
     @Test
     public void testAdminLogin_InvalidCredentials() {
+    	//Arrange
         String adminname = "invalid_adminname";
         String password = "invalid_password";
         when(service.validateAdmin(adminname, password)).thenReturn(null);
+        
+        //Act
         String viewName = controller.adminLogin(model, session, adminname, password);
+        
+        //Assert
         assertEquals("adminPage", viewName);
+        
+        //Verify Behaviors
         verify(model).addAttribute("error", "Invalid adminname or password");
         verify(model, never()).addAttribute(eq("validAdmin"), any(MyAdmin.class));
     }
@@ -168,20 +198,28 @@ public class WebPageControllerTest {
     // Test for displaying UserNumber List
     @Test
     public void testListUsers() {
+    	//Arrange
         List<MyUser> users = Arrays.asList(new MyUser(), new MyUser());
         when(service.getUsers()).thenReturn(users);
+        //Act
         String viewName = controller.listUsers(model);
+        //Assert
         assertEquals("userList", viewName);
+        //verify behavior
         verify(model, times(1)).addAttribute("users", users);
     }
     
     // Test for displaying update page with a valid user
     @Test
     public void testShowUpdatePage_ValidUser() {
+    	//Arrange
         MyUser validUser = new MyUser();
         when(session.getAttribute("validuser")).thenReturn(validUser);
+        //Act
         String viewName = controller.showUpdatePage(session, model);
+        //Assert
         assertEquals("updatePage", viewName);
+        //Verify behavior
         verify(model).addAttribute("user", validUser);
     }
 
@@ -197,6 +235,7 @@ public class WebPageControllerTest {
     // Test for updating user number
     @Test
     public void testUpdateUserNumber() {
+    	//Arrange
         long userId = 123L;
         long newNumber = 9876543210L;
         MyUser updatedUser = new MyUser();
@@ -206,11 +245,11 @@ public class WebPageControllerTest {
         doNothing().when(service).updateNumber(userId, newNumber);
         // Mock the behavior of addFlashAttribute to return the RedirectAttributes itself (chaining support)
         when(redirectAttributes.addFlashAttribute(anyString(), anyString())).thenReturn(redirectAttributes);
-
-
+        //Act
         String viewName = controller.updateUserNumber(userId, newNumber, session, redirectAttributes);
-
+        //Assert
         assertEquals("redirect:/update", viewName);
+        //Verify Behaviors
         verify(service).updateNumber(userId, newNumber);
         verify(session).setAttribute("validuser", updatedUser);
         verify(redirectAttributes, times(1)).addFlashAttribute("successMessage", "Number updated successfully!");
@@ -220,11 +259,15 @@ public class WebPageControllerTest {
     // Test for deleting a user
     @Test
     public void testDeleteUser() {
+    	//Arrange
         long userId = 123L;
         MyUser userToDelete = new MyUser();
         userToDelete.setUser_id(userId);
+        //Act
         String viewName = controller.deleteUser(userId);
+        //Assert
         assertEquals("redirect:/display1", viewName);
+        //Verify behavior
         verify(service).deleteUser(argThat(argument -> argument.getUser_id() == userId));
     }
 }
